@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../state/AuthContext'
 
 const linkBase =
-  'relative px-3 py-2 rounded-full text-sm font-medium transition-colors duration-200'
+  'relative px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200'
 
 function NavItem({
   to,
@@ -17,12 +17,12 @@ function NavItem({
   return (
     <Link
       to={to}
-      className={`${linkBase} ${active ? 'text-white' : 'text-ink-500 hover:text-white'}`}
+      className={`${linkBase} ${active ? 'text-stone-900' : 'text-stone-500 hover:text-stone-900'}`}
     >
       {active && (
         <motion.span
           layoutId="nav-pill"
-          className="absolute inset-0 rounded-full bg-white/10"
+          className="absolute inset-0 rounded-md bg-stone-100"
           transition={{ type: 'spring', stiffness: 500, damping: 34 }}
         />
       )}
@@ -48,30 +48,28 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-ink-950/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+    <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
         <Link to="/" className="flex items-center gap-2">
-          <motion.span
-            layout
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent-2 shadow-accent-glow"
-            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5 text-ink-950" fill="none">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent transition-colors duration-300">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
               <path
                 d="M4 16l2-5.5A1.5 1.5 0 0 1 7.4 9.5h9.2a1.5 1.5 0 0 1 1.4 1l2 5.5"
-                stroke="currentColor"
+                stroke="#fff"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <circle cx="8" cy="17" r="1.6" fill="currentColor" />
-              <circle cx="16" cy="17" r="1.6" fill="currentColor" />
+              <circle cx="8" cy="17" r="1.6" fill="#fff" />
+              <circle cx="16" cy="17" r="1.6" fill="#fff" />
             </svg>
-          </motion.span>
-          <span className="font-display text-lg font-bold tracking-tight">Recovr</span>
+          </span>
+          <span className="font-display text-base font-bold tracking-tight text-stone-900">
+            Recovr
+          </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1 sm:flex">
+        <nav className="hidden items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 p-1 sm:flex">
           <NavItem to="/" label="Home" active={pathname === '/'} />
           {user?.role === 'customer' && (
             <NavItem to="/post" label="Request Recovery" active={pathname === '/post'} />
@@ -85,19 +83,19 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleSwitchSide}
-              className="hidden rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium text-ink-500 transition-colors duration-200 hover:text-white sm:block"
+              className="hidden rounded-md border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-500 transition-colors duration-200 hover:border-stone-300 hover:text-stone-900 sm:block"
             >
               Switch side
             </button>
-            <div className="hidden items-center gap-2 rounded-full border border-white/5 bg-white/[0.03] py-1 pl-1 pr-3 sm:flex">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-2 text-[11px] font-bold text-ink-950">
+            <div className="hidden items-center gap-2 rounded-full border border-stone-200 bg-stone-50 py-1 pl-1 pr-3 sm:flex">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white transition-colors duration-300">
                 {user.name.charAt(0).toUpperCase()}
               </span>
-              <span className="text-xs font-medium text-slate-200">{user.name}</span>
+              <span className="text-xs font-medium text-stone-700">{user.name}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="rounded-full bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-white/[0.12]"
+              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-stone-700"
             >
               Log out
             </button>
@@ -105,7 +103,7 @@ export default function Navbar() {
         ) : (
           <Link
             to="/login"
-            className="rounded-full bg-gradient-to-r from-accent to-accent-2 px-4 py-2 text-sm font-semibold text-ink-950 shadow-accent-glow transition-transform duration-200 hover:scale-[1.03]"
+            className="rounded-md bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-stone-700"
           >
             Log in
           </Link>

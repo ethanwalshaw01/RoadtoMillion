@@ -36,7 +36,7 @@ export const YOU_DRIVER = {
   rating: 5,
   jobsCompleted: 0,
   initials: 'ME',
-  accent: '#2fe08a',
+  accent: '#3f7a68',
   verified: true,
   fleet: ['Car', 'Van', 'Motorbike', 'SUV / 4x4', 'Light Truck'] as VehicleType[],
 }

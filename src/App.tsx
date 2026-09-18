@@ -70,7 +70,7 @@ export default function App() {
           </Routes>
         </AnimatePresence>
       </main>
-      <footer className="border-t border-white/5 py-6 text-center text-xs text-ink-500">
+      <footer className="border-t border-stone-200 py-6 text-center text-xs text-stone-400">
         Recovr — a sample car recovery bidding platform · demo data only
       </footer>
     </div>

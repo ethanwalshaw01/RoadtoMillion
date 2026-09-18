@@ -3,20 +3,18 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  --accent: #2dd4bf;
-  --accent-2: #38bdf8;
-  --accent-soft: rgba(45, 212, 191, 0.12);
-  --accent-border: rgba(45, 212, 191, 0.35);
-  --accent-glow: 0 0 0 1px rgba(45, 212, 191, 0.3), 0 10px 30px -8px rgba(45, 212, 191, 0.45);
+  color-scheme: light;
+  --accent: #b8622f;
+  --accent-dark: #9a5127;
+  --accent-soft: #f7ece3;
+  --accent-border: #e7c4a8;
 }
 
 [data-role='driver'] {
-  --accent: #8b5cf6;
-  --accent-2: #6366f1;
-  --accent-soft: rgba(139, 92, 246, 0.14);
-  --accent-border: rgba(139, 92, 246, 0.4);
-  --accent-glow: 0 0 0 1px rgba(139, 92, 246, 0.35), 0 10px 30px -8px rgba(139, 92, 246, 0.5);
+  --accent: #3f7a68;
+  --accent-dark: #326256;
+  --accent-soft: #e7f1ec;
+  --accent-border: #bdd9cd;
 }
 
 html,
@@ -26,18 +24,15 @@ body,
 }
 
 body {
-  @apply bg-ink-950 text-slate-100 font-body antialiased;
-  background-image: theme('backgroundImage.grid-fade');
-  background-repeat: no-repeat;
-  transition: background-color 0.4s ease;
+  @apply bg-stone-50 text-stone-900 font-body antialiased;
 }
 
 ::selection {
-  background: rgba(45, 212, 191, 0.3);
+  background: var(--accent-border);
 }
 
 * {
-  scrollbar-color: #2b3040 transparent;
+  scrollbar-color: #d6d3d1 transparent;
 }
 
 ::-webkit-scrollbar {
@@ -45,7 +40,7 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e222f;
+  background: #d6d3d1;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-track {
@@ -53,12 +48,7 @@ body {
 }
 
 .font-display {
-  letter-spacing: -0.01em;
-}
-
-.glass {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
-  backdrop-filter: blur(14px);
+  letter-spacing: -0.015em;
 }
 
 .tabular {
