@@ -23,6 +23,31 @@ export interface Job {
   acceptedBidId?: string
 }
 
+export type DocumentKind =
+  | 'Motor Trade Insurance'
+  | 'Goods in Transit Insurance'
+  | 'Public Liability Insurance'
+  | 'Driving Licence'
+  | 'DBS Check'
+
+export type DocumentStatus = 'verified' | 'pending' | 'missing' | 'expired'
+
+export interface DriverDocument {
+  kind: DocumentKind
+  status: DocumentStatus
+  fileName?: string
+  expiresOn?: string
+  uploadedAt?: number
+}
+
+export const REQUIRED_DOCUMENTS: DocumentKind[] = [
+  'Motor Trade Insurance',
+  'Goods in Transit Insurance',
+  'Public Liability Insurance',
+  'Driving Licence',
+  'DBS Check',
+]
+
 export interface Driver {
   id: string
   name: string
@@ -33,6 +58,7 @@ export interface Driver {
   accent: string
   verified: boolean
   fleet: VehicleType[]
+  documents: DriverDocument[]
 }
 
 export interface Bid {

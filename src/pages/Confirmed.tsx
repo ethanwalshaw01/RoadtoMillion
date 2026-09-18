@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useJobs } from '../state/JobsContext'
+import { useDriverDocs } from '../state/DriverDocsContext'
+import DriverDocumentsModal from '../components/DriverDocumentsModal'
 
 const STAGES = ['Job accepted', 'Driver dispatched', 'On the way', 'Arriving soon']
 
 export default function Confirmed() {
   const { jobId } = useParams()
   const { getJob, getBids } = useJobs()
+  const { getDocuments } = useDriverDocs()
   const [stage, setStage] = useState(0)
+  const [showDocs, setShowDocs] = useState(false)
 
   const job = jobId ? getJob(jobId) : undefined
   const bid = job?.acceptedBidId
@@ -37,6 +41,8 @@ export default function Confirmed() {
   }
 
   const progressPct = (stage / (STAGES.length - 1)) * 100
+  const documents = getDocuments(bid.driver.id)
+  const docsVerified = documents.length > 0 && documents.every((d) => d.status === 'verified')
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-12">
@@ -79,6 +85,16 @@ export default function Confirmed() {
               <p className="text-xs text-stone-500">
                 {bid.driver.rating.toFixed(1)}★ · {bid.driver.jobsCompleted.toLocaleString()} jobs
               </p>
+              <button
+                type="button"
+                onClick={() => setShowDocs(true)}
+                className={`mt-1 flex items-center gap-1 text-[11px] font-medium ${
+                  docsVerified ? 'text-signal-green' : 'text-stone-400 hover:text-stone-600'
+                }`}
+              >
+                <ShieldIcon />
+                {docsVerified ? 'Insurance & DBS verified' : 'View verification status'}
+              </button>
             </div>
           </div>
           <div className="text-right">
@@ -142,6 +158,30 @@ export default function Confirmed() {
       <p className="mt-6 text-center text-xs text-stone-400">
         This is a demo tracker — timings are simulated.
       </p>
+
+      <AnimatePresence>
+        {showDocs && (
+          <DriverDocumentsModal
+            driver={bid.driver}
+            documents={documents}
+            onClose={() => setShowDocs(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  )
+}
+
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none">
+      <path
+        d="M10 2.5l6 2.2v4.3c0 3.9-2.5 6.9-6 8.5-3.5-1.6-6-4.6-6-8.5V4.7l6-2.2z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <path d="M7.2 10l1.9 1.9 3.7-3.9" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

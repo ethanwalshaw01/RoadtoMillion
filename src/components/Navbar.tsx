@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../state/AuthContext'
+import { useDriverDocs } from '../state/DriverDocsContext'
 
 const linkBase =
   'relative px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200'
@@ -34,7 +35,10 @@ function NavItem({
 export default function Navbar() {
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
+  const { youDocuments } = useDriverDocs()
   const navigate = useNavigate()
+  const needsVerification =
+    user?.role === 'driver' && youDocuments.some((d) => d.status !== 'verified')
 
   function handleSwitchSide() {
     navigate('/login', {
@@ -77,6 +81,9 @@ export default function Navbar() {
           {user?.role === 'driver' && (
             <NavItem to="/driver" label="Driver Board" active={pathname === '/driver'} />
           )}
+          {user?.role === 'driver' && (
+            <NavItem to="/account" label="Account" active={pathname === '/account'} />
+          )}
         </nav>
 
         {user ? (
@@ -87,12 +94,20 @@ export default function Navbar() {
             >
               Switch side
             </button>
-            <div className="hidden items-center gap-2 rounded-full border border-stone-200 bg-stone-50 py-1 pl-1 pr-3 sm:flex">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white transition-colors duration-300">
+            <Link
+              to={user.role === 'driver' ? '/account' : '#'}
+              className={`relative hidden items-center gap-2 rounded-full border border-stone-200 bg-stone-50 py-1 pl-1 pr-3 sm:flex ${
+                user.role === 'driver' ? 'transition-colors duration-200 hover:border-stone-300' : 'pointer-events-none'
+              }`}
+            >
+              <span className="relative flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white transition-colors duration-300">
                 {user.name.charAt(0).toUpperCase()}
+                {needsVerification && (
+                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-white bg-signal-amber" />
+                )}
               </span>
               <span className="text-xs font-medium text-stone-700">{user.name}</span>
-            </div>
+            </Link>
             <button
               onClick={handleLogout}
               className="rounded-md bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-stone-700"

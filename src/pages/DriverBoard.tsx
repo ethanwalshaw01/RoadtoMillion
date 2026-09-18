@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useJobs } from '../state/JobsContext'
+import { useDriverDocs } from '../state/DriverDocsContext'
 import type { Job } from '../types'
 
 const URGENCY_STYLE: Record<string, string> = {
@@ -12,8 +13,11 @@ const URGENCY_STYLE: Record<string, string> = {
 
 export default function DriverBoard() {
   const { jobs, getBids, placeBid } = useJobs()
+  const { youDocuments } = useDriverDocs()
   const openJobs = jobs.filter((j) => j.status === 'open')
   const [activeJob, setActiveJob] = useState<Job | null>(null)
+  const verifiedCount = youDocuments.filter((d) => d.status === 'verified').length
+  const allVerified = verifiedCount === youDocuments.length
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-10">
@@ -25,6 +29,21 @@ export default function DriverBoard() {
           Bid competitively — customers see price, ETA and your rating side by side.
         </p>
       </div>
+
+      {!allVerified && (
+        <Link
+          to="/account"
+          className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-signal-amber/20 bg-signal-amber/5 px-5 py-3.5 text-sm text-signal-amber transition-colors duration-200 hover:bg-signal-amber/10"
+        >
+          <span>
+            <span className="font-semibold">
+              {verifiedCount} of {youDocuments.length} documents verified.
+            </span>{' '}
+            Complete your account so customers can trust your bids.
+          </span>
+          <span className="shrink-0 font-semibold">Finish setup →</span>
+        </Link>
+      )}
 
       {openJobs.length === 0 ? (
         <div className="rounded-xl border border-dashed border-stone-300 bg-white py-16 text-center">

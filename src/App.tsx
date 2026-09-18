@@ -9,6 +9,7 @@ import PostJob from './pages/PostJob'
 import JobBidding from './pages/JobBidding'
 import Confirmed from './pages/Confirmed'
 import DriverBoard from './pages/DriverBoard'
+import Account from './pages/Account'
 import { useAuth, type Role } from './state/AuthContext'
 
 function RequireRole({ role, children }: { role: Role; children: ReactElement }) {
@@ -64,6 +65,14 @@ export default function App() {
               element={
                 <RequireRole role="driver">
                   <PageTransition><DriverBoard /></PageTransition>
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <RequireRole role="driver">
+                  <PageTransition><Account /></PageTransition>
                 </RequireRole>
               }
             />

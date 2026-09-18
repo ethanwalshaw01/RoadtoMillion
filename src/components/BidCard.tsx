@@ -1,5 +1,8 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Bid } from '../types'
+import { useDriverDocs } from '../state/DriverDocsContext'
+import DriverDocumentsModal from './DriverDocumentsModal'
 
 interface BidCardProps {
   bid: Bid
@@ -16,6 +19,10 @@ const HIGHLIGHT_LABEL: Record<string, { label: string; className: string }> = {
 
 export default function BidCard({ bid, highlight, onAccept, disabled }: BidCardProps) {
   const { driver } = bid
+  const { getDocuments } = useDriverDocs()
+  const [showDocs, setShowDocs] = useState(false)
+  const documents = getDocuments(driver.id)
+  const docsVerified = documents.length > 0 && documents.every((d) => d.status === 'verified')
 
   return (
     <motion.div
@@ -74,6 +81,17 @@ export default function BidCard({ bid, highlight, onAccept, disabled }: BidCardP
         </span>
       </div>
 
+      <button
+        type="button"
+        onClick={() => setShowDocs(true)}
+        className={`mt-2.5 flex items-center gap-1 text-[11.5px] font-medium transition-colors duration-200 ${
+          docsVerified ? 'text-signal-green hover:text-signal-green' : 'text-stone-400 hover:text-stone-600'
+        }`}
+      >
+        <ShieldIcon />
+        {docsVerified ? 'Insurance & DBS verified' : 'View verification status'}
+      </button>
+
       {bid.message && (
         <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs italic text-stone-500">
           "{bid.message}"
@@ -87,6 +105,16 @@ export default function BidCard({ bid, highlight, onAccept, disabled }: BidCardP
       >
         Accept this bid
       </button>
+
+      <AnimatePresence>
+        {showDocs && (
+          <DriverDocumentsModal
+            driver={driver}
+            documents={documents}
+            onClose={() => setShowDocs(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
@@ -104,6 +132,20 @@ function ClockIcon() {
     <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 text-stone-400" fill="none">
       <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
       <path d="M10 6v4.2l2.8 1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none">
+      <path
+        d="M10 2.5l6 2.2v4.3c0 3.9-2.5 6.9-6 8.5-3.5-1.6-6-4.6-6-8.5V4.7l6-2.2z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <path d="M7.2 10l1.9 1.9 3.7-3.9" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { Bid, Job, Urgency, VehicleType, IssueType } from '../types'
+import type { Bid, Driver, Job, Urgency, VehicleType, IssueType } from '../types'
 import { DRIVERS } from '../data/drivers'
 
 interface NewJobInput {
@@ -29,7 +29,7 @@ interface JobsState {
   placeBid: (jobId: string, price: number, etaMinutes: number, message?: string) => void
 }
 
-export const YOU_DRIVER = {
+export const YOU_DRIVER: Driver = {
   id: 'you',
   name: 'You',
   company: 'Your Recovery Business',
@@ -39,6 +39,9 @@ export const YOU_DRIVER = {
   accent: '#3f7a68',
   verified: true,
   fleet: ['Car', 'Van', 'Motorbike', 'SUV / 4x4', 'Light Truck'] as VehicleType[],
+  // Live document state lives in DriverDocsContext — call getDocuments('you') for the
+  // current status instead of reading this snapshot, which is never updated in place.
+  documents: [],
 }
 
 const JobsContext = createContext<JobsState | null>(null)
