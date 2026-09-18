@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useJobs } from '../state/JobsContext'
 import type { Job } from '../types'
 
 const URGENCY_STYLE: Record<string, string> = {
   Standard: 'bg-white/10 text-slate-300',
-  Urgent: 'bg-amber-500/15 text-amber-400',
+  Urgent: 'bg-accent-soft text-accent',
   Emergency: 'bg-signal-red/15 text-signal-red',
 }
 
@@ -30,68 +31,79 @@ export default function DriverBoard() {
           <p className="text-sm text-slate-400">
             No open jobs right now in this demo session.
           </p>
-          <Link to="/post" className="mt-3 inline-block text-sm text-amber-400 hover:underline">
+          <Link to="/post" className="mt-3 inline-block text-sm text-accent hover:underline">
             Post a job as a customer to see it appear here →
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {openJobs.map((job) => {
-            const bids = getBids(job.id)
-            const youBid = bids.find((b) => b.driver.id === 'you')
-            return (
-              <div
-                key={job.id}
-                className="rounded-2xl border border-white/5 bg-asphalt-850/60 p-5"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-display text-sm font-semibold text-white">
-                    {job.issue} · {job.vehicle}
-                  </h3>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${URGENCY_STYLE[job.urgency]}`}
-                  >
-                    {job.urgency}
-                  </span>
-                </div>
-                <p className="mt-1.5 text-xs text-slate-400">📍 {job.pickup}</p>
-                <p className="mt-0.5 text-xs text-slate-500">→ {job.dropoff}</p>
-
-                <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                  <span>{bids.length} bid{bids.length === 1 ? '' : 's'} so far</span>
-                  {bids.length > 0 && (
-                    <span>
-                      from £{Math.min(...bids.map((b) => b.price))}
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => setActiveJob(job)}
-                  className={`mt-4 w-full rounded-xl py-2.5 text-sm font-semibold transition-colors ${
-                    youBid
-                      ? 'bg-signal-green/15 text-signal-green'
-                      : 'bg-amber-500 text-asphalt-950 hover:bg-amber-400'
-                  }`}
+        <motion.div layout className="grid gap-4 sm:grid-cols-2">
+          <AnimatePresence>
+            {openJobs.map((job) => {
+              const bids = getBids(job.id)
+              const youBid = bids.find((b) => b.driver.id === 'you')
+              return (
+                <motion.div
+                  key={job.id}
+                  layout
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  whileHover={{ y: -3 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  className="rounded-2xl border border-white/5 bg-ink-850/60 p-5 transition-shadow duration-200 hover:shadow-accent-glow"
                 >
-                  {youBid ? `Your bid: £${youBid.price} — edit` : 'Place a bid'}
-                </button>
-              </div>
-            )
-          })}
-        </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-display text-sm font-semibold text-white">
+                      {job.issue} · {job.vehicle}
+                    </h3>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${URGENCY_STYLE[job.urgency]}`}
+                    >
+                      {job.urgency}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-xs text-slate-400">📍 {job.pickup}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">→ {job.dropoff}</p>
+
+                  <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                    <span>{bids.length} bid{bids.length === 1 ? '' : 's'} so far</span>
+                    {bids.length > 0 && (
+                      <span>
+                        from £{Math.min(...bids.map((b) => b.price))}
+                      </span>
+                    )}
+                  </div>
+
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setActiveJob(job)}
+                    className={`mt-4 w-full rounded-xl py-2.5 text-sm font-semibold transition-colors duration-200 ${
+                      youBid
+                        ? 'bg-signal-green/15 text-signal-green'
+                        : 'bg-gradient-to-r from-accent to-accent-2 text-ink-950'
+                    }`}
+                  >
+                    {youBid ? `Your bid: £${youBid.price} — edit` : 'Place a bid'}
+                  </motion.button>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        </motion.div>
       )}
 
-      {activeJob && (
-        <BidModal
-          job={activeJob}
-          onClose={() => setActiveJob(null)}
-          onSubmit={(price, eta, message) => {
-            placeBid(activeJob.id, price, eta, message)
-            setActiveJob(null)
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {activeJob && (
+          <BidModal
+            job={activeJob}
+            onClose={() => setActiveJob(null)}
+            onSubmit={(price, eta, message) => {
+              placeBid(activeJob.id, price, eta, message)
+              setActiveJob(null)
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -110,8 +122,22 @@ function BidModal({
   const [message, setMessage] = useState('')
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-asphalt-850 p-6 shadow-glow-strong animate-rise">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 12, scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-ink-850 p-6 shadow-accent-glow"
+      >
         <h3 className="font-display text-lg font-bold text-white">
           Bid on: {job.issue}
         </h3>
@@ -120,7 +146,7 @@ function BidModal({
         <div className="mt-5 space-y-4">
           <label className="block">
             <span className="mb-1.5 flex justify-between text-sm font-semibold text-slate-200">
-              Your price <span className="text-amber-400 tabular">£{price}</span>
+              Your price <span className="text-accent tabular">£{price}</span>
             </span>
             <input
               type="range"
@@ -128,13 +154,13 @@ function BidModal({
               max={180}
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full accent-amber-500"
+              className="w-full accent-[var(--accent)]"
             />
           </label>
 
           <label className="block">
             <span className="mb-1.5 flex justify-between text-sm font-semibold text-slate-200">
-              ETA <span className="text-amber-400 tabular">{eta} min</span>
+              ETA <span className="text-accent tabular">{eta} min</span>
             </span>
             <input
               type="range"
@@ -142,7 +168,7 @@ function BidModal({
               max={60}
               value={eta}
               onChange={(e) => setEta(Number(e.target.value))}
-              className="w-full accent-amber-500"
+              className="w-full accent-[var(--accent)]"
             />
           </label>
 
@@ -154,7 +180,7 @@ function BidModal({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="e.g. Fully equipped, can leave now"
-              className="w-full rounded-xl border border-white/10 bg-asphalt-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-amber-500/40 focus:ring-2"
+              className="w-full rounded-xl border border-white/10 bg-ink-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-accent/40 transition-shadow duration-200 focus:ring-2"
             />
           </label>
         </div>
@@ -162,18 +188,19 @@ function BidModal({
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             onClick={onClose}
-            className="rounded-xl border border-white/10 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/[0.05]"
+            className="rounded-xl border border-white/10 py-2.5 text-sm font-semibold text-slate-300 transition-colors duration-200 hover:bg-white/[0.05]"
           >
             Cancel
           </button>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={() => onSubmit(price, eta, message.trim() || undefined)}
-            className="rounded-xl bg-amber-500 py-2.5 text-sm font-semibold text-asphalt-950 hover:bg-amber-400"
+            className="rounded-xl bg-gradient-to-r from-accent to-accent-2 py-2.5 text-sm font-semibold text-ink-950"
           >
             Submit bid
-          </button>
+          </motion.button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

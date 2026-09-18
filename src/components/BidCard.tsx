@@ -1,8 +1,8 @@
+import { motion } from 'framer-motion'
 import type { Bid } from '../types'
 
 interface BidCardProps {
   bid: Bid
-  rank: number
   highlight?: 'price' | 'eta' | 'rating' | null
   onAccept: (bidId: string) => void
   disabled?: boolean
@@ -11,16 +11,21 @@ interface BidCardProps {
 const HIGHLIGHT_LABEL: Record<string, { label: string; className: string }> = {
   price: { label: 'Best price', className: 'bg-signal-green/15 text-signal-green' },
   eta: { label: 'Fastest arrival', className: 'bg-signal-blue/15 text-signal-blue' },
-  rating: { label: 'Top rated', className: 'bg-amber-500/15 text-amber-400' },
+  rating: { label: 'Top rated', className: 'bg-accent-soft text-accent' },
 }
 
-export default function BidCard({ bid, rank, highlight, onAccept, disabled }: BidCardProps) {
+export default function BidCard({ bid, highlight, onAccept, disabled }: BidCardProps) {
   const { driver } = bid
 
   return (
-    <div
-      className="group relative animate-rise rounded-2xl border border-white/5 bg-asphalt-850/70 p-5 shadow-lg shadow-black/20 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/30 hover:shadow-glow"
-      style={{ animationDelay: `${Math.min(rank, 6) * 40}ms` }}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 14, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+      whileHover={{ y: -3 }}
+      className="group relative rounded-2xl border border-white/5 bg-ink-850/70 p-5 shadow-lg shadow-black/20 transition-colors duration-200 hover:border-accent-border hover:shadow-accent-glow"
     >
       {highlight && (
         <span
@@ -33,7 +38,7 @@ export default function BidCard({ bid, rank, highlight, onAccept, disabled }: Bi
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-asphalt-950"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-ink-950"
             style={{ backgroundColor: driver.accent }}
           >
             {driver.initials}
@@ -79,11 +84,11 @@ export default function BidCard({ bid, rank, highlight, onAccept, disabled }: Bi
       <button
         onClick={() => onAccept(bid.id)}
         disabled={disabled}
-        className="mt-4 w-full rounded-xl bg-white/[0.06] py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-amber-500 hover:text-asphalt-950 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/[0.06] disabled:hover:text-white"
+        className="mt-4 w-full rounded-xl bg-white/[0.06] py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.01] hover:bg-accent hover:text-ink-950 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-white/[0.06] disabled:hover:text-white"
       >
         Accept this bid
       </button>
-    </div>
+    </motion.div>
   )
 }
 

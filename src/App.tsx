@@ -1,25 +1,76 @@
-import { Route, Routes } from 'react-router-dom'
+import type { ReactElement } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
+import PageTransition from './components/PageTransition'
 import Landing from './pages/Landing'
+import Login from './pages/Login'
 import PostJob from './pages/PostJob'
 import JobBidding from './pages/JobBidding'
 import Confirmed from './pages/Confirmed'
 import DriverBoard from './pages/DriverBoard'
+import { useAuth, type Role } from './state/AuthContext'
+
+function RequireRole({ role, children }: { role: Role; children: ReactElement }) {
+  const { user } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role !== role) {
+    return <Navigate to={user.role === 'driver' ? '/driver' : '/post'} replace />
+  }
+  return children
+}
 
 export default function App() {
+  const { user } = useAuth()
+  const location = useLocation()
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div
+      data-role={user?.role}
+      className="flex min-h-screen flex-col transition-colors duration-500"
+    >
       <Navbar />
       <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/post" element={<PostJob />} />
-          <Route path="/job/:jobId" element={<JobBidding />} />
-          <Route path="/confirmed/:jobId" element={<Confirmed />} />
-          <Route path="/driver" element={<DriverBoard />} />
-        </Routes>
+        <AnimatePresence mode="wait" initial={false}>
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
+            <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+            <Route
+              path="/post"
+              element={
+                <RequireRole role="customer">
+                  <PageTransition><PostJob /></PageTransition>
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/job/:jobId"
+              element={
+                <RequireRole role="customer">
+                  <PageTransition><JobBidding /></PageTransition>
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/confirmed/:jobId"
+              element={
+                <RequireRole role="customer">
+                  <PageTransition><Confirmed /></PageTransition>
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/driver"
+              element={
+                <RequireRole role="driver">
+                  <PageTransition><DriverBoard /></PageTransition>
+                </RequireRole>
+              }
+            />
+          </Routes>
+        </AnimatePresence>
       </main>
-      <footer className="border-t border-white/5 py-6 text-center text-xs text-slate-600">
+      <footer className="border-t border-white/5 py-6 text-center text-xs text-ink-500">
         Recovr — a sample car recovery bidding platform · demo data only
       </footer>
     </div>

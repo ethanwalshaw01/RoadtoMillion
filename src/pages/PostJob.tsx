@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useJobs } from '../state/JobsContext'
 import type { IssueType, Urgency, VehicleType } from '../types'
 
@@ -56,9 +57,12 @@ export default function PostJob() {
         </p>
       </div>
 
-      <form
+      <motion.form
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         onSubmit={handleSubmit}
-        className="space-y-6 rounded-3xl border border-white/5 bg-asphalt-850/60 p-6 shadow-lg shadow-black/20 sm:p-8"
+        className="space-y-6 rounded-3xl border border-white/5 bg-ink-850/60 p-6 shadow-lg shadow-black/20 sm:p-8"
       >
         <fieldset>
           <legend className="mb-3 text-sm font-semibold text-slate-200">
@@ -90,23 +94,24 @@ export default function PostJob() {
           <legend className="mb-3 text-sm font-semibold text-slate-200">Urgency</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {URGENCIES.map((u) => (
-              <button
+              <motion.button
+                whileTap={{ scale: 0.97 }}
                 type="button"
                 key={u.value}
                 onClick={() => setUrgency(u.value)}
-                className={`rounded-xl border p-3 text-left transition-colors ${
+                className={`rounded-xl border p-3 text-left transition-colors duration-200 ${
                   urgency === u.value
-                    ? 'border-amber-500/50 bg-amber-500/10'
+                    ? 'border-accent-border bg-accent-soft'
                     : 'border-white/5 bg-white/[0.02] hover:border-white/15'
                 }`}
               >
                 <p
-                  className={`text-sm font-semibold ${urgency === u.value ? 'text-amber-400' : 'text-slate-200'}`}
+                  className={`text-sm font-semibold ${urgency === u.value ? 'text-accent' : 'text-slate-200'}`}
                 >
                   {u.value}
                 </p>
                 <p className="mt-0.5 text-xs text-slate-500">{u.body}</p>
-              </button>
+              </motion.button>
             ))}
           </div>
         </fieldset>
@@ -121,7 +126,7 @@ export default function PostJob() {
               value={pickup}
               onChange={(e) => setPickup(e.target.value)}
               placeholder="e.g. A34 northbound, near Chieveley"
-              className="w-full rounded-xl border border-white/10 bg-asphalt-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-amber-500/40 focus:ring-2"
+              className="w-full rounded-xl border border-white/10 bg-ink-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-accent/40 transition-shadow duration-200 focus:ring-2"
             />
           </label>
           <label className="block">
@@ -132,7 +137,7 @@ export default function PostJob() {
               value={dropoff}
               onChange={(e) => setDropoff(e.target.value)}
               placeholder="e.g. Home address or garage"
-              className="w-full rounded-xl border border-white/10 bg-asphalt-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-amber-500/40 focus:ring-2"
+              className="w-full rounded-xl border border-white/10 bg-ink-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-accent/40 transition-shadow duration-200 focus:ring-2"
             />
           </label>
         </div>
@@ -146,18 +151,20 @@ export default function PostJob() {
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="e.g. On hard shoulder, hazards on, two passengers with me"
-            className="w-full resize-none rounded-xl border border-white/10 bg-asphalt-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-amber-500/40 focus:ring-2"
+            className="w-full resize-none rounded-xl border border-white/10 bg-ink-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none ring-accent/40 transition-shadow duration-200 focus:ring-2"
           />
         </label>
 
-        <button
+        <motion.button
+          whileHover={{ scale: submitting ? 1 : 1.01 }}
+          whileTap={{ scale: submitting ? 1 : 0.98 }}
           type="submit"
           disabled={submitting || !pickup.trim()}
-          className="w-full rounded-xl bg-amber-500 py-3.5 text-sm font-semibold text-asphalt-950 shadow-glow transition-transform hover:scale-[1.01] hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+          className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-2 py-3.5 text-sm font-semibold text-ink-950 shadow-accent-glow transition-opacity duration-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? 'Broadcasting to drivers…' : 'Post job & start receiving bids'}
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
     </div>
   )
 }
@@ -172,16 +179,17 @@ function OptionPill({
   children: ReactNode
 }) {
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.95 }}
       type="button"
       onClick={onClick}
-      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
+      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors duration-200 sm:text-sm ${
         active
-          ? 'border-amber-500/60 bg-amber-500/15 text-amber-400'
+          ? 'border-accent-border bg-accent-soft text-accent'
           : 'border-white/5 bg-white/[0.02] text-slate-300 hover:border-white/15'
       }`}
     >
       {children}
-    </button>
+    </motion.button>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useJobs } from '../state/JobsContext'
 
 const STAGES = ['Job accepted', 'Driver dispatched', 'On the way', 'Arriving soon']
@@ -28,7 +29,7 @@ export default function Confirmed() {
     return (
       <div className="mx-auto max-w-2xl px-5 py-24 text-center">
         <p className="text-slate-400">No confirmed recovery found for this job.</p>
-        <Link to="/post" className="mt-4 inline-block text-amber-400 hover:underline">
+        <Link to="/post" className="mt-4 inline-block text-accent hover:underline">
           Post a recovery job
         </Link>
       </div>
@@ -39,7 +40,12 @@ export default function Confirmed() {
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-12">
-      <div className="mb-6 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-6 text-center"
+      >
         <span className="inline-flex items-center gap-2 rounded-full bg-signal-green/10 px-3 py-1 text-xs font-medium text-signal-green">
           <span className="h-1.5 w-1.5 rounded-full bg-signal-green" />
           Recovery confirmed
@@ -50,13 +56,18 @@ export default function Confirmed() {
         <p className="mt-1 text-sm text-slate-400">
           {job.issue} · {job.pickup}
         </p>
-      </div>
+      </motion.div>
 
-      <div className="rounded-3xl border border-white/5 bg-asphalt-850/60 p-6 shadow-lg shadow-black/20 sm:p-8">
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+        className="rounded-3xl border border-white/5 bg-ink-850/60 p-6 shadow-lg shadow-black/20 sm:p-8"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-asphalt-950"
+              className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-ink-950"
               style={{ backgroundColor: bid.driver.accent }}
             >
               {bid.driver.initials}
@@ -78,7 +89,9 @@ export default function Confirmed() {
 
         <div className="mt-8">
           <div className="mb-2 flex justify-between text-xs text-slate-500">
-            <span>{STAGES[stage]}</span>
+            <motion.span key={STAGES[stage]} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {STAGES[stage]}
+            </motion.span>
             <span className="tabular">
               {stage < STAGES.length - 1
                 ? `~${Math.max(1, bid.etaMinutes - stage * Math.round(bid.etaMinutes / STAGES.length))} min`
@@ -86,21 +99,26 @@ export default function Confirmed() {
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-white/5">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-700 ease-out"
-              style={{ width: `${progressPct}%` }}
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-accent to-accent-2"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPct}%` }}
+              transition={{ type: 'spring', stiffness: 90, damping: 20 }}
             />
           </div>
           <div className="mt-3 flex justify-between">
             {STAGES.map((s, i) => (
               <div key={s} className="flex flex-col items-center gap-1.5" style={{ width: 70 }}>
-                <span
-                  className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                    i <= stage ? 'bg-amber-400' : 'bg-white/10'
-                  }`}
+                <motion.span
+                  animate={{
+                    backgroundColor: i <= stage ? 'var(--accent)' : 'rgba(255,255,255,0.1)',
+                    scale: i === stage ? 1.3 : 1,
+                  }}
+                  transition={{ duration: 0.35 }}
+                  className="h-2.5 w-2.5 rounded-full"
                 />
                 <span
-                  className={`text-center text-[10px] leading-tight ${
+                  className={`text-center text-[10px] leading-tight transition-colors duration-300 ${
                     i <= stage ? 'text-slate-300' : 'text-slate-600'
                   }`}
                 >
@@ -112,14 +130,14 @@ export default function Confirmed() {
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-3">
-          <button className="rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/[0.08]">
+          <button className="rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-sm font-semibold text-slate-200 transition-colors duration-200 hover:bg-white/[0.08]">
             📞 Call driver
           </button>
-          <button className="rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/[0.08]">
+          <button className="rounded-xl border border-white/10 bg-white/[0.03] py-2.5 text-sm font-semibold text-slate-200 transition-colors duration-200 hover:bg-white/[0.08]">
             💬 Message
           </button>
         </div>
-      </div>
+      </motion.div>
 
       <p className="mt-6 text-center text-xs text-slate-600">
         This is a demo tracker — timings are simulated.

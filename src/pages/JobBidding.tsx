@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useJobs } from '../state/JobsContext'
 import BidCard from '../components/BidCard'
 import type { Bid } from '../types'
@@ -14,7 +15,7 @@ const SORTERS: Record<SortKey, (a: Bid, b: Bid) => number> = {
 
 const URGENCY_STYLE: Record<string, string> = {
   Standard: 'bg-white/10 text-slate-300',
-  Urgent: 'bg-amber-500/15 text-amber-400',
+  Urgent: 'bg-accent-soft text-accent',
   Emergency: 'bg-signal-red/15 text-signal-red',
 }
 
@@ -61,7 +62,7 @@ export default function JobBidding() {
         <p className="text-slate-400">
           We couldn't find that job. It may have expired.
         </p>
-        <Link to="/post" className="mt-4 inline-block text-amber-400 hover:underline">
+        <Link to="/post" className="mt-4 inline-block text-accent hover:underline">
           Post a new recovery job
         </Link>
       </div>
@@ -70,7 +71,7 @@ export default function JobBidding() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-10">
-      <div className="mb-8 rounded-2xl border border-white/5 bg-asphalt-850/60 p-5 sm:p-6">
+      <div className="mb-8 rounded-2xl border border-white/5 bg-ink-850/60 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -101,18 +102,25 @@ export default function JobBidding() {
             ? 'Waiting for the first bid…'
             : `${sorted.length} bid${sorted.length === 1 ? '' : 's'} received`}
         </h2>
-        <div className="flex items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1 text-xs">
+        <div className="relative flex items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1 text-xs">
           {(['price', 'eta', 'rating'] as SortKey[]).map((key) => (
             <button
               key={key}
               onClick={() => setSortKey(key)}
-              className={`rounded-full px-3 py-1.5 font-medium transition-colors ${
-                sortKey === key
-                  ? 'bg-white/10 text-white'
-                  : 'text-slate-500 hover:text-slate-300'
+              className={`relative rounded-full px-3 py-1.5 font-medium transition-colors duration-200 ${
+                sortKey === key ? 'text-ink-950' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
-              {key === 'price' ? 'Lowest price' : key === 'eta' ? 'Fastest ETA' : 'Top rated'}
+              {sortKey === key && (
+                <motion.span
+                  layoutId="sort-pill"
+                  className="absolute inset-0 rounded-full bg-accent"
+                  transition={{ type: 'spring', stiffness: 500, damping: 34 }}
+                />
+              )}
+              <span className="relative z-10">
+                {key === 'price' ? 'Lowest price' : key === 'eta' ? 'Fastest ETA' : 'Top rated'}
+              </span>
             </button>
           ))}
         </div>
@@ -120,18 +128,19 @@ export default function JobBidding() {
 
       {sorted.length === 0 && <WaitingState />}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {sorted.map((bid, i) => (
-          <BidCard
-            key={bid.id}
-            bid={bid}
-            rank={i}
-            highlight={highlightFor(bid.id)}
-            onAccept={handleAccept}
-            disabled={job.status !== 'open'}
-          />
-        ))}
-      </div>
+      <motion.div layout className="grid gap-4 sm:grid-cols-2">
+        <AnimatePresence>
+          {sorted.map((bid) => (
+            <BidCard
+              key={bid.id}
+              bid={bid}
+              highlight={highlightFor(bid.id)}
+              onAccept={handleAccept}
+              disabled={job.status !== 'open'}
+            />
+          ))}
+        </AnimatePresence>
+      </motion.div>
     </div>
   )
 }
@@ -140,8 +149,8 @@ function WaitingState() {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-16 text-center">
       <div className="relative mb-4 h-12 w-12">
-        <span className="absolute inset-0 animate-ping rounded-full bg-amber-500/30" />
-        <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15 text-xl">
+        <span className="absolute inset-0 animate-ping rounded-full bg-accent-soft" />
+        <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-xl">
           📡
         </span>
       </div>
