@@ -2,19 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ------------------------------------------------------------------
+   Theme tokens. RGB triplets so Tailwind opacity modifiers work.
+   Night is the default; Day overrides. The customer/driver accent
+   is swapped by [data-role] on the app shell.
+   ------------------------------------------------------------------ */
+:root,
+:root[data-theme='night'] {
+  color-scheme: dark;
+  --c-bg: 11 12 14;
+  --c-elev: 16 18 21;
+  --c-surface: 22 24 28;
+  --c-surface-2: 29 32 37;
+  --c-surface-3: 38 42 48;
+  --c-line: 255 255 255;
+  --c-line-strong: 255 255 255;
+  --c-ink: 242 241 236;
+  --c-ink-2: 168 169 163;
+  --c-ink-3: 112 113 108;
+  --c-amber: 255 176 32;
+  --c-beacon: 76 194 255;
+  --c-ok: 74 222 128;
+  --c-warn: 247 209 84;
+  --c-danger: 255 92 92;
+  --c-info: 96 165 250;
+  --c-accent: var(--c-amber);
+  --c-accent-ink: 20 19 18;
+  --line-alpha: 0.08;
+  --line-strong-alpha: 0.16;
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 30px 60px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --grain-opacity: 0.045;
+}
+
+:root[data-theme='day'] {
   color-scheme: light;
-  --accent: #b8622f;
-  --accent-dark: #9a5127;
-  --accent-soft: #f7ece3;
-  --accent-border: #e7c4a8;
+  --c-bg: 244 242 236;
+  --c-elev: 250 249 246;
+  --c-surface: 255 255 255;
+  --c-surface-2: 246 244 239;
+  --c-surface-3: 234 231 223;
+  --c-line: 20 19 18;
+  --c-line-strong: 20 19 18;
+  --c-ink: 20 19 18;
+  --c-ink-2: 92 90 85;
+  --c-ink-3: 142 140 133;
+  --c-amber: 221 143 0;
+  --c-beacon: 8 122 168;
+  --c-ok: 22 143 74;
+  --c-warn: 176 128 0;
+  --c-danger: 200 48 48;
+  --c-info: 29 99 199;
+  --c-accent-ink: 255 255 255;
+  --line-alpha: 0.1;
+  --line-strong-alpha: 0.2;
+  --shadow-card: 0 1px 2px rgb(20 19 18 / 0.06), 0 1px 1px rgb(20 19 18 / 0.03);
+  --shadow-pop: 0 24px 50px -18px rgb(20 19 18 / 0.3), 0 0 0 1px rgb(20 19 18 / 0.06);
+  --grain-opacity: 0.035;
 }
 
 [data-role='driver'] {
-  --accent: #3f7a68;
-  --accent-dark: #326256;
-  --accent-soft: #e7f1ec;
-  --accent-border: #bdd9cd;
+  --c-accent: var(--c-beacon);
+  --c-accent-ink: 8 14 20;
+}
+:root[data-theme='day'] [data-role='driver'] {
+  --c-accent-ink: 255 255 255;
 }
 
 html,
@@ -24,47 +76,267 @@ body,
 }
 
 body {
-  @apply bg-stone-50 text-stone-900 font-body antialiased;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+  font-family: Barlow, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Film grain over everything, very faint. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 ::selection {
-  background: var(--accent-border);
+  background: rgb(var(--c-accent) / 0.35);
 }
 
 * {
-  scrollbar-color: #d6d3d1 transparent;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--c-line) / 0.25) transparent;
 }
-
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: rgb(var(--c-line) / 0.2);
   border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.font-display {
-  letter-spacing: -0.015em;
+/* Line utilities: borders use the line token with alpha baked in. */
+.border-line {
+  border-color: rgb(var(--c-line) / var(--line-alpha));
+}
+.border-line-strong {
+  border-color: rgb(var(--c-line) / var(--line-strong-alpha));
+}
+.divide-line > * + * {
+  border-color: rgb(var(--c-line) / var(--line-alpha));
 }
 
+.font-display {
+  letter-spacing: 0.01em;
+}
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+.eyebrow {
+  font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  font-size: 11px;
+  color: rgb(var(--c-ink-3));
+}
 
-* {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+/* Hazard stripes — the signature motif. */
+.hazard {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(var(--c-accent)) 0 10px,
+    transparent 10px 20px
+  );
+}
+.hazard-solid {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(var(--c-accent)) 0 12px,
+    rgb(var(--c-accent-ink)) 12px 24px
+  );
+}
+.hazard-line {
+  height: 3px;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(var(--c-accent)) 0 8px,
+    transparent 8px 16px
+  );
+  opacity: 0.6;
+}
+
+/* Road centre line for step timelines. */
+.road-dash {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgb(var(--c-ink-3)) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+/* Viewfinder corner brackets on selected controls. */
+.brackets {
+  position: relative;
+}
+.brackets::before,
+.brackets::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgb(var(--c-accent));
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.8);
+  pointer-events: none;
+}
+.brackets::before {
+  top: -3px;
+  left: -3px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 4px;
+}
+.brackets::after {
+  bottom: -3px;
+  right: -3px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 4px;
+}
+.brackets[data-on='true']::before,
+.brackets[data-on='true']::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Ticket card with perforated notches. */
+.ticket {
+  position: relative;
+  background: rgb(var(--c-surface));
+  --notch: 10px;
+  --notch-y: 64px;
+  -webkit-mask:
+    radial-gradient(circle at 0 var(--notch-y), transparent var(--notch), #000 calc(var(--notch) + 0.5px)),
+    radial-gradient(circle at 100% var(--notch-y), transparent var(--notch), #000 calc(var(--notch) + 0.5px));
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle at 0 var(--notch-y), transparent var(--notch), #000 calc(var(--notch) + 0.5px)),
+    radial-gradient(circle at 100% var(--notch-y), transparent var(--notch), #000 calc(var(--notch) + 0.5px));
+  mask-composite: intersect;
+}
+.ticket-rule {
+  border-top: 1.5px dashed rgb(var(--c-line) / var(--line-strong-alpha));
+}
+
+/* Focus ring, consistent and visible in both themes. */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgb(var(--c-bg)),
+    0 0 0 4px rgb(var(--c-accent));
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgb(var(--c-bg)),
+    0 0 0 4px rgb(var(--c-accent) / 0.8);
+}
+
+/* Native range input styled to the theme. */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    rgb(var(--c-accent)) 0 var(--fill, 0%),
+    rgb(var(--c-line) / var(--line-strong-alpha)) var(--fill, 0%) 100%
+  );
+}
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(var(--c-line) / var(--line-strong-alpha));
+}
+input[type='range']::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(var(--c-accent));
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgb(var(--c-ink));
+  border: 4px solid rgb(var(--c-accent));
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgb(var(--c-ink));
+  border: 4px solid rgb(var(--c-accent));
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+}
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+/* Remove number spinners; we render our own steppers. */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Marquee ticker needs its track duplicated; pause on hover. */
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  :root:not([data-motion='full']) *,
+  :root:not([data-motion='full']) *::before,
+  :root:not([data-motion='full']) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+:root[data-motion='reduced'] *,
+:root[data-motion='reduced'] *::before,
+:root[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }

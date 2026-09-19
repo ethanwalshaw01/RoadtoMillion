@@ -1,16 +1,13 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { KEYS, readJSON, removeKey, writeJSON } from '../lib/storage'
 
 export type Role = 'customer' | 'driver'
 
 export interface AuthUser {
   name: string
   role: Role
+  phone?: string
+  joinedAt: number
 }
 
 interface AuthState {
@@ -18,52 +15,51 @@ interface AuthState {
   login: (name: string, role: Role) => void
   logout: () => void
   switchRole: (role: Role) => void
+  updateUser: (patch: Partial<Pick<AuthUser, 'name' | 'phone'>>) => void
 }
 
 const AuthContext = createContext<AuthState | null>(null)
-const STORAGE_KEY = 'recovr:user'
 
 function readStoredUser(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (parsed && (parsed.role === 'customer' || parsed.role === 'driver')) {
-      return parsed as AuthUser
-    }
-    return null
-  } catch {
-    return null
+  const parsed = readJSON<Partial<AuthUser> | null>(KEYS.user, null)
+  if (parsed && typeof parsed.name === 'string' && (parsed.role === 'customer' || parsed.role === 'driver')) {
+    return { joinedAt: Date.now(), ...parsed } as AuthUser
   }
+  return null
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(readStoredUser)
 
   useEffect(() => {
-    try {
-      if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-      else localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // storage unavailable — session-only auth is fine for this demo
-    }
+    if (user) writeJSON(KEYS.user, user)
+    else removeKey(KEYS.user)
   }, [user])
 
-  function login(name: string, role: Role) {
-    setUser({ name: name.trim() || 'Guest', role })
-  }
-  function logout() {
-    setUser(null)
-  }
-  function switchRole(role: Role) {
-    setUser((u) => (u ? { ...u, role } : u))
-  }
+  const login = useCallback((name: string, role: Role) => {
+    setUser((prev) => ({
+      name: name.trim() || 'Guest',
+      role,
+      phone: prev?.phone,
+      joinedAt: prev?.joinedAt ?? Date.now(),
+    }))
+  }, [])
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, switchRole }}>
-      {children}
-    </AuthContext.Provider>
+  const logout = useCallback(() => setUser(null), [])
+
+  const switchRole = useCallback((role: Role) => {
+    setUser((u) => (u ? { ...u, role } : u))
+  }, [])
+
+  const updateUser = useCallback((patch: Partial<Pick<AuthUser, 'name' | 'phone'>>) => {
+    setUser((u) => (u ? { ...u, ...patch } : u))
+  }, [])
+
+  const value = useMemo(
+    () => ({ user, login, logout, switchRole, updateUser }),
+    [user, login, logout, switchRole, updateUser],
   )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

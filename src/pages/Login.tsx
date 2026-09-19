@@ -2,50 +2,64 @@ import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth, type Role } from '../state/AuthContext'
+import Logo from '../components/Logo'
+import Button from '../components/ui/Button'
+import { Input, Label } from '../components/ui/Field'
+import Icon, { type IconName } from '../components/ui/Icon'
 
 interface LocationState {
   preselect?: Role
+  from?: string
 }
+
+const PERSONAS = ['Jordan Blake', 'Sam Okafor', 'Priya Shah', 'Alex Reid']
+
+const SIDES: { role: Role; title: string; body: string; icon: IconName; points: string[] }[] = [
+  {
+    role: 'customer',
+    title: "I'm broken down",
+    body: 'Post the job once, watch drivers bid, pick the one you like.',
+    icon: 'warning',
+    points: ['Fixed prices, no haggling', 'Verified, insured drivers', 'Live tracking to your door'],
+  },
+  {
+    role: 'driver',
+    title: "I'm a recovery driver",
+    body: 'See jobs near your depot, bid in seconds, get paid on completion.',
+    icon: 'truck',
+    points: ['Radar view of open jobs', 'Market price guidance', 'Keep your own rates'],
+  },
+]
 
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, login } = useAuth()
+  const state = (location.state as LocationState | null) ?? {}
 
-  const preselect = (location.state as LocationState | null)?.preselect
   const [name, setName] = useState(user?.name ?? '')
-  const [isDriver, setIsDriver] = useState(preselect === 'driver')
+  const [role, setRole] = useState<Role>(state.preselect ?? user?.role ?? 'customer')
   const [submitting, setSubmitting] = useState(false)
-
-  const role: Role = isDriver ? 'driver' : 'customer'
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
     setSubmitting(true)
     login(name, role)
-    setTimeout(() => navigate(isDriver ? '/driver' : '/post'), 200)
+    const dest = state.from && !state.from.startsWith('/login') ? state.from : role === 'driver' ? '/driver' : '/post'
+    setTimeout(() => navigate(dest, { replace: true }), 220)
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-140px)] max-w-md flex-col justify-center px-5 py-14">
-      <div className="mb-8 text-center">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900">
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
-            <path
-              d="M4 16l2-5.5A1.5 1.5 0 0 1 7.4 9.5h9.2a1.5 1.5 0 0 1 1.4 1l2 5.5"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle cx="8" cy="17" r="1.6" fill="#fff" />
-            <circle cx="16" cy="17" r="1.6" fill="#fff" />
-          </svg>
-        </span>
-        <h1 className="mt-5 font-display text-2xl font-bold text-stone-900">Sign in to Recovr</h1>
-        <p className="mt-2 text-sm text-stone-500">
-          One account, two sides of the marketplace. Tell us which one you need.
+    <div data-role={role} className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <Logo size={44} wordmark={false} />
+        <p className="eyebrow mt-5">Sign in</p>
+        <h1 className="mt-1 font-display text-4xl font-bold uppercase tracking-wide text-ink sm:text-5xl">
+          Which side of the road?
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-ink-2">
+          One account, both halves of the marketplace. Pick a side now, switch any time from the menu.
         </p>
       </div>
 
@@ -54,79 +68,75 @@ export default function Login() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         onSubmit={handleSubmit}
-        className="rounded-2xl border border-stone-200 bg-white p-6 shadow-popover sm:p-7"
       >
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-stone-800">Your name</span>
-          <input
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SIDES.map((s) => {
+            const active = role === s.role
+            return (
+              <motion.button
+                key={s.role}
+                type="button"
+                whileTap={{ scale: 0.985 }}
+                onClick={() => setRole(s.role)}
+                data-on={active}
+                data-role={s.role}
+                aria-pressed={active}
+                className={`brackets relative overflow-hidden rounded-card border p-5 text-left transition-[border-color,background-color] duration-300 ${
+                  active ? 'border-accent/70 bg-accent/8' : 'border-line bg-surface hover:border-line-strong'
+                }`}
+              >
+                {active && <div className="hazard-line absolute inset-x-0 top-0" />}
+                <div className="flex items-start justify-between">
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${active ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink-2'}`}>
+                    <Icon name={s.icon} size={22} />
+                  </span>
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${active ? 'border-accent bg-accent text-accent-ink' : 'border-line-strong'}`}>
+                    {active && <Icon name="check" size={12} strokeWidth={3} />}
+                  </span>
+                </div>
+                <p className="mt-4 font-display text-2xl font-bold uppercase leading-none tracking-wide text-ink">{s.title}</p>
+                <p className="mt-1.5 text-sm text-ink-2">{s.body}</p>
+                <ul className="mt-3 space-y-1">
+                  {s.points.map((p) => (
+                    <li key={p} className="flex items-center gap-1.5 text-xs text-ink-3">
+                      <Icon name="check" size={12} className={active ? 'text-accent' : 'text-ink-3'} /> {p}
+                    </li>
+                  ))}
+                </ul>
+              </motion.button>
+            )
+          })}
+        </div>
+
+        <div className="mt-5 rounded-card border border-line bg-surface p-5 shadow-card sm:p-6">
+          <Label htmlFor="name" hint="No password needed in the demo">Your name</Label>
+          <Input
+            id="name"
+            autoFocus
             required
+            icon="user"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Jordan Blake"
-            className={`w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 outline-none transition-shadow duration-200 focus:ring-2 ${
-              isDriver ? 'focus:ring-[#3f7a68]/30' : 'focus:ring-[#b8622f]/30'
-            }`}
           />
-        </label>
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] uppercase tracking-wider text-ink-3">Try:</span>
+            {PERSONAS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setName(p)}
+                className="rounded-full border border-line-strong px-2.5 py-0.5 text-xs text-ink-2 transition-colors hover:border-accent/60 hover:text-ink"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
 
-        <div className="mt-6">
-          <span className="mb-2 block text-sm font-semibold text-stone-800">
-            Which side are you on?
-          </span>
-
-          <label className="group relative flex cursor-pointer select-none items-center rounded-xl border border-stone-300 bg-stone-100 p-1.5">
-            <input
-              type="checkbox"
-              className="peer sr-only"
-              checked={isDriver}
-              onChange={(e) => setIsDriver(e.target.checked)}
-              aria-label="Toggle between broken down (customer) and recovery driver"
-            />
-            <motion.span
-              layout
-              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-              className="absolute inset-y-1.5 w-[calc(50%-6px)] rounded-lg"
-              style={{
-                left: isDriver ? 'calc(50% + 3px)' : '6px',
-                background: isDriver ? '#3f7a68' : '#b8622f',
-              }}
-            />
-            <span
-              className={`relative z-10 flex-1 rounded-lg py-2.5 text-center text-xs font-semibold transition-colors duration-200 ${
-                !isDriver ? 'text-white' : 'text-stone-500'
-              }`}
-            >
-              Broken down
-            </span>
-            <span
-              className={`relative z-10 flex-1 rounded-lg py-2.5 text-center text-xs font-semibold transition-colors duration-200 ${
-                isDriver ? 'text-white' : 'text-stone-500'
-              }`}
-            >
-              Recovery driver
-            </span>
-          </label>
-          <p className="mt-2.5 text-xs text-stone-500">
-            {isDriver
-              ? 'You’ll see the driver board and can bid on open jobs.'
-              : 'You’ll be able to post a breakdown and compare bids.'}
-          </p>
+          <Button type="submit" block size="lg" className="mt-6" loading={submitting} disabled={!name.trim()} iconRight="arrow-right">
+            Continue as {role === 'driver' ? 'a recovery driver' : 'a customer'}
+          </Button>
         </div>
-
-        <button
-          type="submit"
-          disabled={submitting || !name.trim()}
-          style={{ backgroundColor: isDriver ? '#3f7a68' : '#b8622f' }}
-          className="mt-7 w-full rounded-lg py-3.5 text-sm font-semibold text-white shadow-card transition-opacity duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting
-            ? 'Signing in…'
-            : `Continue as ${isDriver ? 'a recovery driver' : 'a customer'}`}
-        </button>
-
-        <p className="mt-4 text-center text-[11px] text-stone-400">
-          Demo login — no password needed, just tell us who you are.
-        </p>
       </motion.form>
     </div>
   )

@@ -1,17 +1,30 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="night">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Recovr — Car Recovery, Bid by Bid</title>
-    <meta name="description" content="Post your breakdown, let trusted recovery drivers bid, pick the price that works for you." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0c0e" />
+    <title>Recovr — Roadside recovery, bid by bid</title>
+    <meta
+      name="description"
+      content="Post your breakdown, watch verified recovery drivers bid live, and pick the price, ETA or rating that suits you."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      try {
+        var s = JSON.parse(localStorage.getItem('recovr:settings') || '{}');
+        var t = s.theme === 'day' ? 'day' : 'night';
+        document.documentElement.setAttribute('data-theme', t);
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'day' ? '#f4f2ec' : '#0b0c0e');
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

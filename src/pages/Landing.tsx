@@ -1,47 +1,47 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../state/AuthContext'
+import { DRIVERS } from '../data/drivers'
+import { LinkButton } from '../components/ui/Button'
+import Icon, { type IconName } from '../components/ui/Icon'
+import Avatar from '../components/ui/Avatar'
+import Badge from '../components/ui/Badge'
+import LiveBadge from '../components/LiveBadge'
+import CountUp from '../components/CountUp'
 
-const STEPS = [
-  {
-    title: 'Post your breakdown',
-    body: "Tell us your vehicle, the issue, and where you're stranded. Takes under a minute.",
-    icon: '📍',
-  },
-  {
-    title: 'Recovery drivers bid',
-    body: 'Verified local operators compete for your job in real time with a fixed price and ETA.',
-    icon: '⚡',
-  },
-  {
-    title: 'You pick the winner',
-    body: 'Compare price, arrival time and ratings, then accept — no haggling, no surprises.',
-    icon: '✅',
-  },
+const TICKER = [
+  'Flat tyre · Car · M4 J12 · 4 bids · from £58',
+  "Won't start · Van · Slough Trading Estate · 3 bids · from £71",
+  'Accident recovery · SUV · A34 Chieveley · 5 bids · from £96',
+  'Wrong fuel · Car · Tesco Reading · 2 bids · from £84',
+  'Stuck off-road · 4x4 · Henley · 3 bids · from £110',
+  'Locked out · Car · Heathrow T5 · 4 bids · from £49',
+  'Engine failure · Campervan · A303 · 2 bids · from £132',
+]
+
+const STEPS: { title: string; body: string; icon: IconName }[] = [
+  { title: 'Post the breakdown', body: 'Vehicle, problem, where you are. Under a minute, no phone queue.', icon: 'broadcast' },
+  { title: 'Drivers bid live', body: 'Verified local operators send a fixed price and an ETA. You watch them land in real time.', icon: 'tag' },
+  { title: 'Pick, track, done', body: 'Choose on price, speed or rating. Follow the truck to your bumper and pay on completion.', icon: 'truck' },
 ]
 
 const STATS = [
-  { value: '2,400+', label: 'Recoveries completed' },
-  { value: '£38', label: 'Avg. saved vs. call-out quote' },
-  { value: '11 min', label: 'Avg. time to first bid' },
-  { value: '4.8★', label: 'Average driver rating' },
+  { value: 2400, suffix: '+', label: 'Recoveries completed' },
+  { value: 38, prefix: '£', label: 'Avg. saved vs. call-out quote' },
+  { value: 11, suffix: ' min', label: 'Avg. time to first bid' },
+  { value: 4.8, suffix: '★', label: 'Average driver rating', decimals: 1 },
 ]
 
-const SAMPLE_BIDS = [
-  { initials: 'OB', name: 'Ollie Bramwell', rating: '5.0', eta: '12 min', price: '£64', best: true },
-  { initials: 'DF', name: 'Dale Foster', rating: '4.5', eta: '18 min', price: '£71', best: false },
-  { initials: 'PN', name: 'Priya Nadarajah', rating: '4.7', eta: '9 min', price: '£78', best: false },
+const FAQ = [
+  { q: 'Is the price really fixed?', a: 'Yes. The number you accept is the number you pay. Drivers can only add cost for things you agree to in chat first, like fuel you asked them to bring.' },
+  { q: 'How do I know a driver is legit?', a: 'Every bid shows the driver’s verification status. We check motor trade insurance, goods-in-transit cover, public liability, licence and DBS, and you can open the documents before accepting.' },
+  { q: 'What if nobody bids?', a: 'You can extend the bidding window or repost with a different urgency. In busy areas the first bid usually lands within a few minutes.' },
+  { q: 'Can I cancel?', a: 'Any time before a driver sets off, free. Once they are on the way a small call-out fee applies, and we tell you before you confirm.' },
 ]
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0 },
-}
-
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
-}
+const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } } }
 
 export default function Landing() {
   const { user } = useAuth()
@@ -49,199 +49,282 @@ export default function Landing() {
   const driverHref = user?.role === 'driver' ? '/driver' : '/login'
 
   return (
-    <div>
-      <motion.section
-        initial="hidden"
-        animate="show"
-        variants={stagger}
-        className="mx-auto max-w-6xl px-5 pb-16 pt-14 sm:pt-20"
-      >
+    <div className="overflow-x-clip">
+      {/* Ticker */}
+      <div className="ticker relative border-b border-line bg-elev">
+        <div className="flex overflow-hidden py-2">
+          <div className="ticker-track flex shrink-0 animate-marquee gap-10 whitespace-nowrap pr-10">
+            {[...TICKER, ...TICKER].map((t, i) => (
+              <span key={i} className="flex items-center gap-2 font-mono text-[11.5px] text-ink-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" /> {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <motion.section initial="hidden" animate="show" variants={stagger} className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pt-20">
+        <div className="pointer-events-none absolute -left-32 top-10 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr,0.95fr]">
           <div>
-            <motion.span
-              variants={fadeUp}
-              transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-soft px-3 py-1 text-xs font-medium text-accent"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Live bidding marketplace for vehicle recovery
-            </motion.span>
-
-            <motion.h1
-              variants={fadeUp}
-              transition={{ duration: 0.45 }}
-              className="mt-5 font-display text-4xl font-bold leading-[1.1] tracking-tight text-stone-900 sm:text-5xl"
-            >
-              Broken down? Let recovery <span className="text-accent">drivers bid</span> for
-              your job.
+            <motion.div variants={fadeUp}>
+              <LiveBadge>Live bidding marketplace</LiveBadge>
+            </motion.div>
+            <motion.h1 variants={fadeUp} className="mt-6 font-display text-[54px] font-bold uppercase leading-[0.9] tracking-wide text-ink sm:text-[84px]">
+              Broken down?
+              <br />
+              <span className="text-accent">Let the road</span>
+              <br />
+              come to you.
             </motion.h1>
-
-            <motion.p
-              variants={fadeUp}
-              transition={{ duration: 0.45 }}
-              className="mt-5 max-w-lg text-base leading-relaxed text-stone-600"
-            >
-              Post the job once. Trusted local recovery operators send you a fixed price
-              and ETA. You choose who comes — by price, speed, or rating.
+            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-[17px] leading-relaxed text-ink-2">
+              Post the job once. Verified recovery drivers near you send a fixed price and ETA within minutes. You pick who comes, by price, speed or rating. No call centre, no haggling, no surprises.
             </motion.p>
-
-            <motion.div
-              variants={fadeUp}
-              transition={{ duration: 0.45 }}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-            >
-              <Link
-                to={customerHref}
-                state={{ preselect: 'customer' }}
-                className="rounded-lg bg-accent px-6 py-3 text-center text-sm font-semibold text-white shadow-card transition-colors duration-200 hover:bg-accent-dark"
-              >
+            <motion.div variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <LinkButton to={customerHref} state={{ preselect: 'customer' }} size="lg" icon="broadcast">
                 Request recovery now
-              </Link>
-              <Link
-                to={driverHref}
-                state={{ preselect: 'driver' }}
-                className="rounded-lg border border-stone-300 bg-white px-6 py-3 text-center text-sm font-semibold text-stone-700 transition-colors duration-200 hover:border-stone-400 hover:bg-stone-50"
-              >
+              </LinkButton>
+              <LinkButton to={driverHref} state={{ preselect: 'driver' }} size="lg" variant="outline" icon="truck">
                 I'm a recovery driver
-              </Link>
+              </LinkButton>
             </motion.div>
-
-            <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="mt-6 flex items-center gap-4 text-xs text-stone-500">
-              <span className="flex items-center gap-1.5">
-                <svg viewBox="0 0 20 20" className="h-4 w-4 text-signal-green" fill="currentColor">
-                  <path d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Zm4.1 6.1-5 5a.75.75 0 0 1-1.06 0l-2.14-2.14a.75.75 0 1 1 1.06-1.06l1.61 1.6 4.47-4.46a.75.75 0 0 1 1.06 1.06Z" />
-                </svg>
-                DBS-checked drivers
-              </span>
-              <span className="flex items-center gap-1.5">
-                <svg viewBox="0 0 20 20" className="h-4 w-4 text-signal-green" fill="currentColor">
-                  <path d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Zm4.1 6.1-5 5a.75.75 0 0 1-1.06 0l-2.14-2.14a.75.75 0 1 1 1.06-1.06l1.61 1.6 4.47-4.46a.75.75 0 0 1 1.06 1.06Z" />
-                </svg>
-                Fully insured recovery
-              </span>
-            </motion.div>
+            <motion.ul variants={fadeUp} className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-2">
+              {['DBS-checked drivers', 'Fully insured recovery', 'Fixed price, pay on completion'].map((t) => (
+                <li key={t} className="flex items-center gap-1.5">
+                  <Icon name="shield-check" size={14} className="text-ok" /> {t}
+                </li>
+              ))}
+            </motion.ul>
           </div>
 
-          <motion.div
-            variants={fadeUp}
-            transition={{ duration: 0.5 }}
-            className="rounded-2xl border border-stone-200 bg-white p-5 shadow-popover"
-          >
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-              <div>
-                <p className="text-sm font-semibold text-stone-900">Flat tyre · Car</p>
-                <p className="text-xs text-stone-500">M4 westbound, Jct 12</p>
-              </div>
-              <span className="rounded-full bg-signal-green/10 px-2.5 py-1 text-[11px] font-semibold text-signal-green">
-                3 bids in
-              </span>
-            </div>
-            <div className="mt-3 flex flex-col gap-2">
-              {SAMPLE_BIDS.map((b) => (
-                <div
-                  key={b.name}
-                  className={`flex items-center justify-between rounded-lg border px-3 py-2.5 ${
-                    b.best ? 'border-accent-border bg-accent-soft' : 'border-stone-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-800 text-[11px] font-bold text-white">
-                      {b.initials}
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold text-stone-800">{b.name}</p>
-                      <p className="text-[11px] text-stone-500">★ {b.rating} · ETA {b.eta}</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold tabular text-stone-900">{b.price}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-center text-[11px] text-stone-400">Example — real bids arrive after you post</p>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
+            <LiveDemoCard />
           </motion.div>
         </div>
 
-        <motion.div variants={stagger} className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <motion.div variants={stagger} className="mt-16 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {STATS.map((s) => (
-            <motion.div
-              key={s.label}
-              variants={fadeUp}
-              transition={{ duration: 0.4 }}
-              className="rounded-xl border border-stone-200 bg-white px-4 py-5 text-center shadow-card"
-            >
-              <p className="font-display text-2xl font-bold tabular text-stone-900 sm:text-3xl">
-                {s.value}
+            <motion.div key={s.label} variants={fadeUp} className="rounded-card border border-line bg-surface px-4 py-5 shadow-card">
+              <p className="font-mono text-3xl font-semibold tabular text-ink">
+                {s.prefix}
+                <CountUp to={s.value} format={(n) => (s.decimals ? n.toFixed(s.decimals) : Math.round(n).toLocaleString('en-GB'))} />
+                {s.suffix}
               </p>
-              <p className="mt-1 text-xs text-stone-500">{s.label}</p>
+              <p className="mt-1.5 text-xs text-ink-3">{s.label}</p>
             </motion.div>
           ))}
         </motion.div>
       </motion.section>
 
-      <section className="border-y border-stone-200 bg-stone-100/70 py-16">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="mb-10 text-center">
-            <h2 className="font-display text-2xl font-bold text-stone-900 sm:text-3xl">
-              How it works
-            </h2>
-            <p className="mt-2 text-sm text-stone-500">
-              Three steps between roadside and back on the road.
-            </p>
+      {/* How it works */}
+      <section className="relative border-y border-line bg-elev py-16 sm:py-20">
+        <div className="hazard-line absolute inset-x-0 top-0 opacity-30" />
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-10 max-w-xl">
+            <p className="eyebrow">How it works</p>
+            <h2 className="mt-2 font-display text-4xl font-bold uppercase tracking-wide text-ink sm:text-5xl">Three steps between the hard shoulder and home.</h2>
           </div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={stagger}
-            className="grid gap-5 sm:grid-cols-3"
-          >
+          <motion.ol initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={stagger} className="relative grid gap-6 sm:grid-cols-3">
+            <div className="pointer-events-none absolute left-6 right-6 top-[22px] hidden h-px road-dash sm:block" style={{ backgroundImage: 'repeating-linear-gradient(to right, rgb(var(--c-ink-3)) 0 10px, transparent 10px 20px)' }} />
             {STEPS.map((step, i) => (
-              <motion.div
-                key={step.title}
-                variants={fadeUp}
-                transition={{ duration: 0.4 }}
-                className="relative rounded-xl border border-stone-200 bg-white p-6 shadow-card transition-shadow duration-200 hover:shadow-card-hover"
-              >
-                <span className="absolute -top-3 left-6 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-                  {i + 1}
+              <motion.li key={step.title} variants={fadeUp} className="relative">
+                <span className="relative z-10 flex h-11 w-11 items-center justify-center rounded-xl border border-line-strong bg-surface text-accent shadow-card">
+                  <Icon name={step.icon} size={20} />
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent font-mono text-[10px] font-bold text-accent-ink">{i + 1}</span>
                 </span>
-                <div className="mb-3 text-2xl">{step.icon}</div>
-                <h3 className="font-display text-base font-semibold text-stone-900">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600">{step.body}</p>
-              </motion.div>
+                <h3 className="mt-4 font-display text-2xl font-bold uppercase tracking-wide text-ink">{step.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{step.body}</p>
+              </motion.li>
             ))}
+          </motion.ol>
+        </div>
+      </section>
+
+      {/* For drivers: this section wears the driver accent. */}
+      <section data-role="driver" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.5 }}>
+            <p className="eyebrow !text-accent">For recovery operators</p>
+            <h2 className="mt-2 font-display text-4xl font-bold uppercase tracking-wide text-ink sm:text-5xl">Fill the gaps in your day, at your price.</h2>
+            <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-2">
+              Recovr sends jobs to your radar, not a dispatcher. You see the vehicle, the problem and the distance, and you decide what it is worth. Bid in ten seconds, win on your reputation, keep your rates.
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                ['radar', 'Radar of open jobs around your depot'],
+                ['wallet', 'Market price guidance on every bid'],
+                ['shield-check', 'Verified badge once your docs are in'],
+                ['star', 'Ratings that travel with you'],
+              ].map(([icon, text]) => (
+                <li key={text} className="flex items-start gap-2.5 text-sm text-ink-2">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent/12 text-accent">
+                    <Icon name={icon as IconName} size={13} />
+                  </span>
+                  {text}
+                </li>
+              ))}
+            </ul>
+            <LinkButton to={driverHref} state={{ preselect: 'driver' }} className="mt-8" size="lg" icon="truck">
+              Open the driver board
+            </LinkButton>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.5 }} className="rounded-card border border-line bg-surface p-5 shadow-card">
+            <div className="flex items-center justify-between">
+              <p className="eyebrow">Tonight's board</p>
+              <LiveBadge>3 open</LiveBadge>
+            </div>
+            <ul className="mt-4 divide-y divide-line">
+              {[
+                ['Flat tyre · Car', 'M4 J12, 6.2 km', 'Urgent', '£58–£84'],
+                ["Won't start · Van", 'Slough, 11 km', 'Standard', '£64–£96'],
+                ['Stuck off-road · 4x4', 'Henley, 14 km', 'Emergency', '£110–£160'],
+              ].map(([t, w, u, p]) => (
+                <li key={t} className="flex items-center justify-between gap-3 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{t}</p>
+                    <p className="text-xs text-ink-3">{w}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge tone={u === 'Emergency' ? 'danger' : u === 'Urgent' ? 'accent' : 'neutral'}>{u}</Badge>
+                    <p className="mt-1 font-mono text-xs text-ink-2">{p}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </motion.div>
         </div>
       </section>
 
-      <motion.section
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto max-w-6xl px-5 py-16"
-      >
-        <div className="flex flex-col items-center justify-between gap-6 rounded-2xl border border-accent-border bg-accent-soft p-8 text-center sm:flex-row sm:text-left">
+      {/* FAQ */}
+      <section className="border-t border-line bg-elev py-16">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr,1.2fr]">
           <div>
-            <h3 className="font-display text-xl font-bold text-stone-900 sm:text-2xl">
-              Stuck right now?
-            </h3>
-            <p className="mt-1 text-sm text-stone-600">
-              Post your job and start receiving bids within minutes.
-            </p>
+            <p className="eyebrow">Straight answers</p>
+            <h2 className="mt-2 font-display text-4xl font-bold uppercase tracking-wide text-ink">Questions people ask at the roadside.</h2>
           </div>
-          <Link
-            to={customerHref}
-            state={{ preselect: 'customer' }}
-            className="shrink-0 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white shadow-card transition-colors duration-200 hover:bg-accent-dark"
-          >
-            Post a recovery job
-          </Link>
+          <FaqList />
         </div>
-      </motion.section>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <div className="relative overflow-hidden rounded-card border border-accent/40 bg-accent/10 p-8 sm:p-10">
+          <div className="hazard absolute -right-10 -top-10 h-40 w-40 rotate-12 opacity-20" />
+          <div className="relative flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+            <div>
+              <h3 className="font-display text-3xl font-bold uppercase tracking-wide text-ink sm:text-4xl">Stuck right now?</h3>
+              <p className="mt-1.5 text-sm text-ink-2">Post the job and bids start landing in minutes. Nothing to pay until the truck arrives.</p>
+            </div>
+            <LinkButton to={customerHref} state={{ preselect: 'customer' }} size="lg" icon="broadcast">
+              Post a recovery job
+            </LinkButton>
+          </div>
+        </div>
+      </section>
     </div>
+  )
+}
+
+/** Looping mini-demo of bids landing on a job, purely presentational. */
+function LiveDemoCard() {
+  const sample = [DRIVERS[4]!, DRIVERS[0]!, DRIVERS[1]!, DRIVERS[2]!]
+  const bids = [
+    { d: sample[0]!, price: 64, eta: 12 },
+    { d: sample[1]!, price: 71, eta: 9 },
+    { d: sample[2]!, price: 78, eta: 18 },
+    { d: sample[3]!, price: 59, eta: 24 },
+  ]
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    let i = 0
+    const tick = () => {
+      i = (i + 1) % (bids.length + 2)
+      setCount(Math.min(i, bids.length))
+    }
+    const id = setInterval(tick, 1700)
+    return () => clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const shown = bids.slice(0, count)
+  const lowest = shown.length ? Math.min(...shown.map((b) => b.price)) : null
+
+  return (
+    <div className="relative rounded-card border border-line bg-surface p-5 shadow-pop">
+      <div className="hazard-line absolute inset-x-0 top-0 rounded-t-card" />
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="font-mono text-[11px] text-ink-3">RCV-7K3Q</p>
+          <p className="font-display text-xl font-bold uppercase tracking-wide text-ink">Flat tyre · Car</p>
+          <p className="text-xs text-ink-2">M4 westbound, Jct 12</p>
+        </div>
+        <LiveBadge tone="ok">{shown.length} bid{shown.length === 1 ? '' : 's'}</LiveBadge>
+      </div>
+      <ul className="mt-4 flex min-h-[232px] flex-col gap-2">
+        <AnimatePresence initial={false}>
+          {shown.map((b) => {
+            const best = b.price === lowest
+            return (
+              <motion.li
+                key={b.d.id}
+                layout
+                initial={{ opacity: 0, y: 14, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className={`flex items-center justify-between rounded-xl border px-3 py-2.5 ${best ? 'border-accent/60 bg-accent/10' : 'border-line bg-elev'}`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Avatar initials={b.d.initials} color={b.d.accent} size={32} />
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{b.d.name}</p>
+                    <p className="text-[11px] text-ink-3">★ {b.d.rating.toFixed(1)} · ETA {b.eta} min · verified</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-lg font-semibold tabular text-ink">£{b.price}</p>
+                  {best && <p className="eyebrow !text-accent">lowest</p>}
+                </div>
+              </motion.li>
+            )
+          })}
+        </AnimatePresence>
+        {shown.length === 0 && (
+          <li className="flex flex-1 items-center justify-center text-xs text-ink-3">Broadcasting to drivers within 25 km…</li>
+        )}
+      </ul>
+      <p className="mt-3 text-center text-[11px] text-ink-3">Example. Real bids land after you post.</p>
+    </div>
+  )
+}
+
+function FaqList() {
+  const [open, setOpen] = useState<number | null>(0)
+  return (
+    <ul className="divide-y divide-line rounded-card border border-line bg-surface">
+      {FAQ.map((f, i) => {
+        const isOpen = open === i
+        return (
+          <li key={f.q}>
+            <button onClick={() => setOpen(isOpen ? null : i)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left" aria-expanded={isOpen}>
+              <span className="font-display text-lg font-semibold uppercase tracking-wide text-ink">{f.q}</span>
+              <motion.span animate={{ rotate: isOpen ? 180 : 0 }} className="text-ink-3">
+                <Icon name="chevron-down" size={18} />
+              </motion.span>
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
+                  <p className="px-5 pb-5 text-sm leading-relaxed text-ink-2">{f.a}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </li>
+        )
+      })}
+      <li className="px-5 py-3 text-xs text-ink-3">
+        Still unsure? <Link to="/login" className="font-semibold text-accent">Sign in</Link> and post a test job. It is a demo, nothing is real.
+      </li>
+    </ul>
   )
 }

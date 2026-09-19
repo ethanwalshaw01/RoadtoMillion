@@ -1,20 +1,18 @@
 import type { DocumentStatus } from '../types'
+import Badge, { type BadgeTone } from './ui/Badge'
 
-const STATUS_STYLE: Record<DocumentStatus, { label: string; className: string }> = {
-  verified: { label: 'Verified', className: 'bg-signal-green/10 text-signal-green' },
-  pending: { label: 'Pending review', className: 'bg-signal-amber/10 text-signal-amber' },
-  missing: { label: 'Not uploaded', className: 'bg-stone-100 text-stone-500' },
-  expired: { label: 'Expired', className: 'bg-signal-red/10 text-signal-red' },
+const STATUS: Record<DocumentStatus, { label: string; tone: BadgeTone }> = {
+  verified: { label: 'Verified', tone: 'ok' },
+  pending: { label: 'In review', tone: 'warn' },
+  missing: { label: 'Not uploaded', tone: 'neutral' },
+  expired: { label: 'Expired', tone: 'danger' },
 }
 
 export default function DocumentStatusPill({ status }: { status: DocumentStatus }) {
-  const s = STATUS_STYLE[status]
+  const s = STATUS[status]
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${s.className}`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+    <Badge tone={s.tone} dot pulse={status === 'pending'}>
       {s.label}
-    </span>
+    </Badge>
   )
 }
